@@ -1,0 +1,300 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ReboundIQ — Pro Scanner</title>
+    <!-- Use Google Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+    <script src="https://unpkg.com/lightweight-charts/dist/lightweight-charts.standalone.production.js"></script>
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+    <div class="app-container">
+        <!-- Header outside of scrollable area -->
+        <header class="top-header">
+            <div class="brand">
+                <div class="logo-icon">IQ</div>
+                <h1>ReboundIQ</h1>
+            </div>
+
+            <nav class="header-nav">
+                <ul class="nav-links">
+                    <li class="nav-item active" data-tab="market-analysis">Market Analysis</li>
+                    <li class="nav-item" data-tab="watchlist">Watchlist</li>
+                    <li class="nav-item" data-tab="technicals">Technicals</li>
+                    <li class="nav-item" data-tab="news-feed">News Feed</li>
+                    <li class="nav-item" data-tab="predictor">Predictor</li>
+                </ul>
+            </nav>
+
+            <div class="status-indicator ml-auto">
+                <div id="market-hours" class="market-hours">
+                    <span class="pulse-dot"></span>
+                    <span id="market-status">Checking Market...</span>
+                </div>
+                <button id="refresh-btn" class="btn-icon" title="Refresh Data">
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="23 4 23 10 17 10"></polyline><polyline points="1 20 1 14 7 14"></polyline><path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15"></path></svg>
+                </button>
+            </div>
+        </header>
+
+        <!-- Main Content Area -->
+        <main class="main-content">
+            <!-- Content Container -->
+            <div class="content-wrapper">
+                
+                <!-- Market Analysis Tab -->
+                <section id="market-analysis" class="tab-pane active">
+                    <!-- Market Summary Widgets -->
+                    <div class="market-grid">
+                        <div class="glass-card market-stat-card">
+                            <div class="section-title" style="margin-bottom: 10px;">FEAR & GREED INDEX</div>
+                            <div class="fg-meter-container">
+                                <div class="fg-meter-base">
+                                    <div id="fg-needle" class="fg-needle"></div>
+                                </div>
+                            </div>
+                            <div id="fg-label" class="fg-label">NEUTRAL</div>
+                            <div id="fg-score" class="fg-score">50.0</div>
+                            <div id="fg-breakdown" class="fg-breakdown">
+                                <span>RSI: --</span> | <span>SENT: --</span>
+                            </div>
+                        </div>
+
+                        <div class="glass-card market-stat-card">
+                            <div class="section-title">MARKET RIGHT NOW</div>
+                            <div id="pred-label" class="pred-text">AWAITING DATA</div>
+                            <div class="pred-stats">
+                                <div class="stat-item">
+                                    <span class="stat-label">MOMENTUM</span>
+                                    <span id="pred-score" class="stat-value">0.00</span>
+                                </div>
+                                <div class="stat-item">
+                                    <span class="stat-label">CONFIDENCE</span>
+                                    <span id="pred-conf" class="stat-value">0.0%</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- High-Fidelity Chart Section (Official TradingView Widget) -->
+                    <div class="glass-card chart-card" style="margin-bottom: 24px; min-height: 500px;">
+                        <div class="chart-header">
+                            <h2 class="section-title">MARKET MOMENTUM & PERFORMANCE <span class="dim-text">(S&P 500)</span></h2>
+                        </div>
+                        <div class="tradingview-widget-container" style="height: 450px; width: 100%;">
+                            <div id="tradingview_spx" style="height: 100%; width: 100%;"></div>
+                            <script type="text/javascript" src="https://s3.tradingview.com/tv.js"></script>
+                            <script type="text/javascript">
+                            new TradingView.widget(
+                            {
+                                "autosize": true,
+                                "symbol": "VUAGL",
+                                "interval": "30",
+                                "timezone": "Etc/UTC",
+                                "theme": "dark",
+                                "style": "3",
+                                "locale": "en",
+                                "toolbar_bg": "#f1f3f6",
+                                "enable_publishing": false,
+                                "hide_side_toolbar": false,
+                                "allow_symbol_change": true,
+                                "container_id": "tradingview_spx",
+                                "overrides": {
+                                    "mainSeriesProperties.style": 3
+                                }
+                            }
+                            );
+                            </script>
+                        </div>
+                    </div>
+
+                    <!-- Market Intel Summary -->
+                    <div class="glass-card intel-card" style="margin-bottom: 24px;">
+                        <div class="intel-header">
+                            <span class="badge badge-primary">MARKET INTEL</span>
+                            <span id="intel-date" class="dim-text" style="font-size: 12px;">Analyzing live data...</span>
+                        </div>
+                        <p id="intel-summary" class="intel-text">Gathering institutional data and sentiment analysis...</p>
+                    </div>
+
+                    <div class="glass-card" style="margin-bottom: 24px;">
+                        <div class="signals-breakdown">
+                            <h2 class="section-title">DETAILED SIGNAL BREAKDOWN</h2>
+                            <div id="signals-list" class="signals-list">
+                                <!-- Populated via JS -->
+                            </div>
+                        </div>
+                    </div>
+
+                    <div id="dip-alert" class="glass-card dip-alert hidden">
+                        <!-- Populated via JS -->
+                    </div>
+                </section>
+
+                <!-- Watchlist Tab -->
+                <section id="watchlist" class="tab-pane">
+                    <div class="watchlist-controls">
+                        <input type="text" id="ticker-input" placeholder="Add Ticker (e.g. AAPL)" class="input-field">
+                        <button id="add-ticker-btn" class="btn btn-primary">Add to Watchlist</button>
+                    </div>
+                    <div class="glass-card table-card">
+                        <table class="data-table">
+                            <thead>
+                                <tr>
+                                    <th>TICKER</th>
+                                    <th class="text-right">PRICE</th>
+                                    <th class="text-right">CHANGE</th>
+                                    <th class="text-right">CHANGE %</th>
+                                    <th class="text-right">ALPHA</th>
+                                    <th class="text-right">VOLUME</th>
+                                    <th class="text-center">DAY RANGE</th>
+                                    <th></th>
+                                </tr>
+                            </thead>
+                            <tbody id="watchlist-body">
+                                <!-- Populated via JS -->
+                            </tbody>
+                        </table>
+                    </div>
+
+                    <!-- Alpha Conviction Guide -->
+                    <div class="glass-card alpha-legend" style="margin-top: 24px; padding: 24px;">
+                        <h3 class="section-title" style="font-size: 16px; margin-bottom: 20px; border-bottom: 1px solid rgba(255,255,255,0.1); padding-bottom: 10px;">ALPHA CONVICTION GUIDE (1.0 - 10.0)</h3>
+                        <div class="ladder-container" style="display: flex; flex-direction: column; gap: 18px;">
+                            <div class="ladder-step" style="display: flex; align-items: flex-start; gap: 20px;">
+                                <div class="step-num" style="background: var(--accent-red); color: white; padding: 4px 12px; border-radius: 4px; font-weight: bold; min-width: 60px; text-align: center; font-family: 'JetBrains Mono', monospace;">1 - 3</div>
+                                <div class="step-desc">
+                                    <strong style="color: var(--accent-red); font-size: 13px; letter-spacing: 1px;">THE AVOID ZONE</strong>
+                                    <p class="dim-text" style="font-size: 11px; margin-top: 4px;">Failing fundamentals. Weak institutional backing and slow growth. High risk of capital loss.</p>
+                                </div>
+                            </div>
+                            <div class="ladder-step" style="display: flex; align-items: flex-start; gap: 20px;">
+                                <div class="step-num" style="background: #444; color: white; padding: 4px 12px; border-radius: 4px; font-weight: bold; min-width: 60px; text-align: center; font-family: 'JetBrains Mono', monospace;">4 - 5</div>
+                                <div class="step-desc">
+                                    <strong style="color: #ccc; font-size: 13px; letter-spacing: 1px;">THE NEUTRAL ZONE</strong>
+                                    <p class="dim-text" style="font-size: 11px; margin-top: 4px;">Solid companies, but either too expensive or missing a key institutional catalyst. Incomplete story.</p>
+                                </div>
+                            </div>
+                            <div class="ladder-step" style="display: flex; align-items: flex-start; gap: 20px;">
+                                <div class="step-num" style="background: var(--accent-orange); color: white; padding: 4px 12px; border-radius: 4px; font-weight: bold; min-width: 60px; text-align: center; font-family: 'JetBrains Mono', monospace;">6 - 7</div>
+                                <div class="step-desc">
+                                    <strong style="color: var(--accent-orange); font-size: 13px; letter-spacing: 1px;">THE WATCHLIST ZONE</strong>
+                                    <p class="dim-text" style="font-size: 11px; margin-top: 4px;">High-conviction targets. Nearly perfect fundamentals but haven't hit the 'Credo Rule' (20% correction) yet.</p>
+                                </div>
+                            </div>
+                            <div class="ladder-step" style="display: flex; align-items: flex-start; gap: 20px;">
+                                <div class="step-num" style="background: var(--accent-green); color: white; padding: 4px 12px; border-radius: 4px; font-weight: bold; min-width: 60px; text-align: center; font-family: 'JetBrains Mono', monospace;">8 - 10</div>
+                                <div class="step-desc">
+                                    <strong style="color: var(--accent-green); font-size: 13px; letter-spacing: 1px;">THE ALPHA ZONE</strong>
+                                    <p class="dim-text" style="font-size: 11px; margin-top: 4px;">Perfect Institutional Setups. Hyper-growth, high whale conviction, and currently sitting in a deep value dip.</p>
+                                </div>
+                            </div>
+                        </div>
+                        <div style="margin-top: 24px; padding-top: 15px; border-top: 1px solid rgba(255,255,255,0.05); font-size: 10px; font-style: italic;" class="dim-text">
+                            * Scores are calculated live based on 13F whale filings, revenue growth, profit margins, and 52-week price drawdowns.
+                        </div>
+                    </div>
+                </section>
+
+                <!-- Technicals Tab -->
+                <section id="technicals" class="tab-pane">
+                    <div class="glass-card">
+                        <h2 class="section-title">TECHNICAL ANALYSIS <span id="tech-ticker-name" class="dim-text"></span></h2>
+                        <div id="tech-content" class="tech-grid">
+                            <!-- Populated via JS -->
+                        </div>
+                    </div>
+                </section>
+
+                <!-- News Feed Tab -->
+                <section id="news-feed" class="tab-pane">
+                    <div class="glass-card">
+                        <div class="news-header">
+                            <h2 class="section-title">FINANCIAL NEWS SENTIMENT</h2>
+                            <div id="agg-sentiment-badge" class="badge">--</div>
+                        </div>
+                        <div id="news-stats" class="news-stats">
+                            <!-- Populated via JS -->
+                        </div>
+                    </div>
+                    <div id="news-list" class="news-list">
+                        <!-- Populated via JS -->
+                    </div>
+                </section>
+
+                <!-- Buy/Sell Predictor Tab -->
+                <section id="predictor" class="tab-pane">
+                    <div class="glass-card table-card">
+                        <div class="card-header">
+                            <h2 class="section-title">ALPHA DISCOVERY <span class="badge badge-accent" style="vertical-align: middle; margin-left: 10px;">Institutional Growth Framework</span></h2>
+                            <p class="subtitle">Deep-scan of Photonics, Quantum Computing, and Space Technology for institutional 13F whale entries.</p>
+                        </div>
+                        <table class="data-table">
+                            <thead>
+                                <tr>
+                                    <th>SYMBOL</th>
+                                    <th class="text-center">SIGNAL</th>
+                                    <th class="text-right">ALPHA</th>
+                                    <th class="text-right">PRICE</th>
+                                    <th>VALUATION</th>
+                                    <th class="text-right">INST %</th>
+                                    <th class="text-right">GROWTH</th>
+                                    <th class="text-right">DD %</th>
+                                </tr>
+                            </thead>
+                            <tbody id="predictor-body">
+                                <!-- Populated via JS -->
+                            </tbody>
+                        </table>
+                    </div>
+
+                    <!-- Alpha Conviction Guide -->
+                    <div class="glass-card alpha-legend" style="margin-top: 24px; padding: 24px;">
+                        <h3 class="section-title" style="font-size: 16px; margin-bottom: 20px; border-bottom: 1px solid rgba(255,255,255,0.1); padding-bottom: 10px;">ALPHA CONVICTION GUIDE (1.0 - 10.0)</h3>
+                        <div class="ladder-container" style="display: flex; flex-direction: column; gap: 18px;">
+                            <div class="ladder-step" style="display: flex; align-items: flex-start; gap: 20px;">
+                                <div class="step-num" style="background: var(--accent-red); color: white; padding: 4px 12px; border-radius: 4px; font-weight: bold; min-width: 60px; text-align: center; font-family: 'JetBrains Mono', monospace;">1 - 3</div>
+                                <div class="step-desc">
+                                    <strong style="color: var(--accent-red); font-size: 13px; letter-spacing: 1px;">THE AVOID ZONE</strong>
+                                    <p class="dim-text" style="font-size: 11px; margin-top: 4px;">Failing fundamentals. Weak institutional backing and slow growth. High risk of capital loss.</p>
+                                </div>
+                            </div>
+                            <div class="ladder-step" style="display: flex; align-items: flex-start; gap: 20px;">
+                                <div class="step-num" style="background: #444; color: white; padding: 4px 12px; border-radius: 4px; font-weight: bold; min-width: 60px; text-align: center; font-family: 'JetBrains Mono', monospace;">4 - 5</div>
+                                <div class="step-desc">
+                                    <strong style="color: #ccc; font-size: 13px; letter-spacing: 1px;">THE NEUTRAL ZONE</strong>
+                                    <p class="dim-text" style="font-size: 11px; margin-top: 4px;">Solid companies, but either too expensive or missing a key institutional catalyst. Incomplete story.</p>
+                                </div>
+                            </div>
+                            <div class="ladder-step" style="display: flex; align-items: flex-start; gap: 20px;">
+                                <div class="step-num" style="background: var(--accent-orange); color: white; padding: 4px 12px; border-radius: 4px; font-weight: bold; min-width: 60px; text-align: center; font-family: 'JetBrains Mono', monospace;">6 - 7</div>
+                                <div class="step-desc">
+                                    <strong style="color: var(--accent-orange); font-size: 13px; letter-spacing: 1px;">THE WATCHLIST ZONE</strong>
+                                    <p class="dim-text" style="font-size: 11px; margin-top: 4px;">High-conviction targets. Nearly perfect fundamentals but haven't hit the 'Credo Rule' (20% correction) yet.</p>
+                                </div>
+                            </div>
+                            <div class="ladder-step" style="display: flex; align-items: flex-start; gap: 20px;">
+                                <div class="step-num" style="background: var(--accent-green); color: white; padding: 4px 12px; border-radius: 4px; font-weight: bold; min-width: 60px; text-align: center; font-family: 'JetBrains Mono', monospace;">8 - 10</div>
+                                <div class="step-desc">
+                                    <strong style="color: var(--accent-green); font-size: 13px; letter-spacing: 1px;">THE ALPHA ZONE</strong>
+                                    <p class="dim-text" style="font-size: 11px; margin-top: 4px;">Perfect Institutional Setups. Hyper-growth, high whale conviction, and currently sitting in a deep value dip.</p>
+                                </div>
+                            </div>
+                        </div>
+                        <div style="margin-top: 24px; padding-top: 15px; border-top: 1px solid rgba(255,255,255,0.05); font-size: 10px; font-style: italic;" class="dim-text">
+                            * Scores are calculated live based on 13F whale filings, revenue growth, profit margins, and 52-week price drawdowns.
+                        </div>
+                    </div>
+                </section>
+                
+            </div>
+        </main>
+
+
+    </div>
+
+    <script src="app.js?v=2.1"></script>
+</body>
+</html>
